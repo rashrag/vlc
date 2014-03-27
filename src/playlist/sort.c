@@ -32,6 +32,55 @@
 #include "vlc_playlist.h"
 #include "playlist_internal.h"
 
+int meta_newcmp(const char *,const char *);
+int meta_digcheck(char);
+
+/*method to check if character is digit*/
+int meta_digcheck(char num)
+{
+        if(num>='0' && num <= '9')
+                return 1;
+        else
+                return 0;
+}
+
+
+/*overriding strcasecmp with method to check numbers amd sort lexicallly*/
+int meta_newcmp( const char *psz_s1, const char *psz_s2 )
+{
+  
+  while (*psz_s1 == *psz_s2)
+  {
+    if ( *psz_s1 == '\0' )
+      return 0;
+    psz_s1++;
+    psz_s2++;
+  }
+ 
+  if(meta_digcheck(*psz_s1))
+  {
+
+        char t1[1000],t2[1000];
+        int i=0,j=0;
+        while(*psz_s1!='\0' && meta_digcheck(*psz_s1))
+        {
+                t1[i]=*psz_s1;
+                psz_s1++;
+        	i++;
+        }
+        while(*psz_s2!='\0' && meta_digcheck(*psz_s2))
+        {
+                t2[j]=*psz_s2;
+                psz_s2++;
+                j++;
+        }
+      
+        return atoi(t1)<atoi(t2)? -1 : +1;
+  }
+
+  return *(unsigned char *)psz_s1 < *(unsigned char *)psz_s2 ? -1 : +1;
+
+}
 
 /* General comparison functions */
 /**
@@ -48,7 +97,7 @@ static inline int meta_strcasecmp_title( const playlist_item_t *first,
     char *psz_second = input_item_GetTitleFbName( second->p_input );
 
     if( psz_first && psz_second )
-        i_ret = strcasecmp( psz_first, psz_second );
+        i_ret = meta_newcmp( psz_first, psz_second );
     else if( !psz_first && psz_second )
         i_ret = 1;
     else if( psz_first && !psz_second )
@@ -98,7 +147,7 @@ static inline int meta_sort( const playlist_item_t *first,
         if( b_integer )
             i_ret = atoi( psz_first ) - atoi( psz_second );
         else
-            i_ret = strcasecmp( psz_first, psz_second );
+            i_ret = meta_newcmp( psz_first, psz_second );
     }
 
     free( psz_first );
@@ -313,7 +362,7 @@ SORTFN( SORT_URI, first, second )
     char *psz_second = input_item_GetURI( second->p_input );
 
     if( psz_first && psz_second )
-        i_ret = strcasecmp( psz_first, psz_second );
+        i_ret = meta_newcmp( psz_first, psz_second );
     else if( !psz_first && psz_second )
         i_ret = 1;
     else if( psz_first && !psz_second )
