@@ -7,7 +7,7 @@
  * Authors: Clément Stenac <zorglub@videolan.org>
  *          Ilkka Ollakka <ileoo@videolan.org>
  *          Rémi Duraffort <ivoire@videolan.org>
- *
+ *          Rashmi Raghunandan <rashmi.raghunandan93@gmail.com>  
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation; either version 2.1 of the License, or
@@ -25,6 +25,8 @@
 #ifdef HAVE_CONFIG_H
 # include "config.h"
 #endif
+#include<string.h>
+#include<stdio.h>
 
 #include <vlc_common.h>
 #include <vlc_rand.h>
@@ -89,6 +91,59 @@ int meta_newcmp( const char *psz_s1, const char *psz_s2 )
  * @param second: the second item
  * @return -1, 0 or 1 like strcmp
  */
+
+
+int meta_newcmp(const char *,const char *);
+int meta_digcheck(char);
+
+/*method to check if character is digit*/
+int meta_digcheck(char num)
+{
+        if(num>='0' && num <= '9')
+                return 1;
+        else
+                return 0;
+}
+
+
+/*overriding strcasecmp with method to check numbers amd sort lexicallly*/
+int meta_newcmp( const char *psz_s1, const char *psz_s2 )
+{
+  
+  while (*psz_s1 == *psz_s2)
+  {
+    if ( *psz_s1 == '\0' )
+      return 0;
+    psz_s1++;
+    psz_s2++;
+  }
+ 
+  if(meta_digcheck(*psz_s1))
+  {
+
+        char t1[1000],t2[1000];
+        int i=0,j=0;
+        while(*psz_s1!='\0' && meta_digcheck(*psz_s1))
+        {
+                t1[i]=*psz_s1;
+                psz_s1++;
+        	i++;
+        }
+        while(*psz_s2!='\0' && meta_digcheck(*psz_s2))
+        {
+                t2[j]=*psz_s2;
+                psz_s2++;
+                j++;
+        }
+      
+        return atoi(t1)<atoi(t2)? -1 : +1;
+  }
+
+  return *(unsigned char *)psz_s1 < *(unsigned char *)psz_s2 ? -1 : +1;
+
+}
+
+
 static inline int meta_strcasecmp_title( const playlist_item_t *first,
                               const playlist_item_t *second )
 {
